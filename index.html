@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Le Royaume de l’Étoile d’Hiver</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1a2e">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Un calendrier de l’Avent interactif en 24 chapitres.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9C%A6%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@500;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="on-title">
+
+<div id="app" data-view="zone">
+
+  <!-- Décor : deux calques pour les fondus + arrière-plan flouté qui remplit les bandes -->
+  <div id="backdrop" aria-hidden="true"></div>
+  <div id="stage-wrap">
+    <div id="stage" data-zone="1">
+      <div id="bg-a" class="bg on" aria-hidden="true"></div>
+      <div id="bg-b" class="bg" aria-hidden="true"></div>
+      <div id="mood" aria-hidden="true"></div>
+      <div id="hotspots"></div>
+      <div id="map-layer" hidden>
+        <div id="map-flocon" aria-hidden="true"><img src="flocon-explore.webp" alt="" draggable="false"></div>
+      </div>
+      <div id="star-glow" hidden aria-hidden="true"></div>
+    </div>
+  </div>
+
+  <canvas id="snow" aria-hidden="true"></canvas>
+  <div id="sweep" hidden aria-hidden="true"><i></i><i></i><i></i></div>
+  <div id="zone-title" hidden aria-live="polite"></div>
+
+  <!-- Interface -->
+  <header id="hud">
+    <div id="hud-left"></div>
+    <div id="hud-right"></div>
+  </header>
+  <div id="sel-chip" class="chip-sel" hidden role="button" tabindex="0" aria-label="Désélectionner l’objet"></div>
+  <div id="wait-banner" hidden></div>
+
+  <!-- Énigmes -->
+  <div id="puzzle-root"></div>
+
+  <!-- Dialogues : grande boîte en bas de l'écran, le personnage se tient debout derrière elle -->
+  <div id="dialogue" hidden>
+    <div id="dlg-shield"></div>
+    <img id="flocon-sprite" class="hidden" alt="" draggable="false">
+    <img id="char-sprite" class="hidden" alt="" draggable="false">
+    <div id="dlg-box" class="narrator" role="dialog" aria-live="polite">
+      <div id="dlg-name" hidden></div>
+      <button id="dlg-skip" class="btn small ghost" hidden>Passer</button>
+      <div id="dlg-text"></div>
+      <div id="dlg-choices" hidden></div>
+      <span id="dlg-next" aria-hidden="true">▾</span>
+    </div>
+  </div>
+
+  <!-- Flocon, dans son coin : on le touche pour savoir où on en est ; il parle parfois tout seul -->
+  <div id="companion" class="hidden">
+    <button id="cmp-btn" type="button" aria-label="Demander à Flocon où on en est" title="Demander à Flocon où on en est">
+      <img id="cmp-sprite" alt="" draggable="false"><span class="cmp-q" aria-hidden="true">?</span>
+    </button>
+    <div id="cmp-bubble" class="fl-bubble" hidden role="status" aria-live="polite"></div>
+  </div>
+
+  <!-- Grand final -->
+  <div id="finale" hidden>
+    <div class="finale-star"></div>
+    <p class="finale-hint" hidden>Touche l’Étoile</p>
+  </div>
+
+  <div id="modal-root"></div>
+  <div id="toasts" aria-live="polite"></div>
+  <div id="fx-root" aria-hidden="true"></div>
+
+  <!-- Écran-titre -->
+  <div id="title-screen">
+    <div class="title-card">
+      <div id="title-star" class="title-star" aria-hidden="true"></div>
+      <h1 id="title-name">Le Royaume de l’Étoile d’Hiver</h1>
+      <p id="title-sub"></p>
+      <img id="title-flocon" class="title-flocon" alt="Flocon, le bonhomme de neige" src="flocon-content.webp" draggable="false">
+      <div class="title-actions">
+        <button id="btn-enter-sound" class="btn primary big">Entrer avec le son</button>
+        <button id="btn-enter-mute" class="btn ghost">Entrer sans le son</button>
+      </div>
+      <p id="title-note" class="title-note"></p>
+    </div>
+  </div>
+
+  <p id="boot-error" hidden></p>
+  <noscript><p class="noscript">Ce jeu a besoin de JavaScript pour fonctionner. Ouvre-le dans un navigateur récent (Safari, Chrome, Firefox, Edge).</p></noscript>
+</div>
+
+<!-- Réglages → data/ → moteur (l’ordre compte) -->
+<script src="js-config.js"></script>
+<script src="js-util.js"></script>
+<script src="js-icons.js"></script>
+<script src="js-glyphs.js"></script>
+<script src="data-flocon.js"></script>
+<script src="data-items.js"></script>
+<script src="data-docs.js"></script>
+<script src="data-people.js"></script>
+<script src="data-codes.js"></script>
+<script src="data-phrases.js"></script>
+<script src="data-characters.js"></script>
+<script src="js-characters.js"></script><!-- (avant data/zones.js, puzzles.js et days.js : il fournit Givre(), Nox()… aux dialogues) -->
+<script src="data-zones.js"></script>
+<script src="data-decor.js"></script>
+<script src="data-souvenirs.js"></script>
+<script src="data-brainstorm.js"></script>
+<script src="data-maps.js"></script>
+<script src="data-puzzles.js"></script>
+<script src="data-days.js"></script>
+<script src="data-audio.js"></script>
+<script src="js-store.js"></script>
+<script src="js-audio.js"></script>
+<script src="js-fx.js"></script>
+<script src="js-dialogue.js"></script>
+<script src="js-progress.js"></script>
+<script src="js-redeem.js"></script>
+<script src="js-scene.js"></script>
+<script src="js-puzzles.js"></script>
+<script src="js-panels.js"></script>
+<script src="js-hud.js"></script>
+<script src="js-companion.js"></script>
+<script src="js-chapter.js"></script>
+<script src="js-minigames.js"></script>
+<script src="js-souvenirs.js"></script>
+<script src="js-brainstorm.js"></script>
+<script src="js-main.js"></script>
+</body>
+</html>
